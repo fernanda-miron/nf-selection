@@ -1,0 +1,13 @@
+## ignore nf.logs
+.nextflow.log*
+.nextflow/
+
+## ignore workdirw
+work*
+
+## ignore local R datas
+*.Rdata
+*.Rhistory
+
+## ignore test results
+./test/results/*

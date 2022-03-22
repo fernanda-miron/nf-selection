@@ -1,0 +1,2 @@
+chromosome,path_vcf,path_genetic_map
+21,test/data/ihs_files/ceu_chr21.recode.vcf,test/data/ihs_files/chr21.map

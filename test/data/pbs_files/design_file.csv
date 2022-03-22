@@ -1,0 +1,2 @@
+path_vcf,path_pop1,path_pop2,path_popout
+test/data/pbs_files/wall.chr21.recode.vcf,test/data/pbs_files/pop_1,test/data/pbs_files/pop_2,test/data/pbs_files/pop_out
