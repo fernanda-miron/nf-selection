@@ -4,7 +4,7 @@ output_directory="test/results"
 
 echo -e "======\n Testing NF execution \n======" \
 && rm -rf $output_directory \
-&& nextflow run ihs.nf \
+&& nextflow run main.nf \
 	--input_ihs $input_ihs \
 	--input_pbs $input_pbs \
 	--output_dir $output_directory \
