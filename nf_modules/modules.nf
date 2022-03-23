@@ -247,6 +247,7 @@ process pbs_by_snp {
 
 	input:
 	file p15
+	val pcutoff
 	file r_script_pbs
 
 	output:
@@ -254,7 +255,7 @@ process pbs_by_snp {
 	path "*.tsv*", emit: png_tsv
 
 	"""
-	Rscript --vanilla pbs_calculator.R . "pbs_by_snp.png" "pbs.tsv"
+	Rscript --vanilla pbs_calculator.R . ${pcutoff}
 	"""
 }
 

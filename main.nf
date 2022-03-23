@@ -198,6 +198,7 @@ def pipelinesummary = [:]
 /* log parameter values beign used into summary */
 pipelinesummary['iHS: not phased']			= params.notphased
 pipelinesummary['iHS: cutoff']			= params.cutoff
+pipelinesummary['PBS: cutoff']			= params.pcutoff
 pipelinesummary['iHS: maff']			= params.maff
 pipelinesummary['iHS: genetic map']			= params.genetic_map
 pipelinesummary['PBS: mart_annotation']			= params.mart
@@ -263,6 +264,9 @@ if (params.maff) maff = Channel.value(params.maff)
 
 /* Load cutoff value for iHS plotting if applied */
 if (params.cutoff) cutoff = Channel.value(params.cutoff)
+
+/* Load cutoff value for iHS plotting if applied */
+if (params.pcutoff) pcutoff = Channel.value(params.pcutoff)
 
 /* Load mart file for annotation if applied */
 if (params.mart) mart_file = Channel.fromPath(params.mart)
@@ -340,7 +344,11 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
 	 p13 = af_2(samples_pbs)
 	 p14 = af_3(samples_pbs)
 	 p15 = p9.mix(p10,p11,p12,p13,p14).toList()
-	 p16 = pbs_by_snp(p15, r_script_pbs)
+	 if (params.pcutoff) {
+		 p16 = pbs_by_snp(p15, pcutoff, r_script_pbs)
+	 } else {
+		 p16 = pbs_by_snp(p15, 0.2, r_script_pbs)
+	 }
 	 if (params.mart){
 		 p17 = ggf_format(p16.png_tsv, mart_file, r_script_format_pbs)
 		 p18 = pbs_annotation(p17.pbs_gff, p17.biomart_gff)

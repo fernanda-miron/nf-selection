@@ -176,20 +176,20 @@ begginer <- min(chromosomes)
 
 tracks = BioCircosSNPTrack('SNPTrack', chromosomes = begginer, positions = pbs_pos[[paste(begginer)]],
                            values = pbs_values[[paste(begginer)]], colors = "#abdda4", size = 1.2,  
-                           maxRadius = 0.97, minRadius = 0.82)
+                           maxRadius = 0.97, minRadius = 0.82, labels = "PBS")
 
 ## Track for PBS
 for (chr in chromosomes) {
   tracks = tracks + BioCircosSNPTrack('SNPTrack', chromosomes = chr, positions = pbs_pos[[paste(chr)]],
                                       values = pbs_values[[paste(chr)]], colors = "#abdda4", 
-                                      maxRadius = 0.97, minRadius = 0.82, size = 1.2)
+                                      maxRadius = 0.97, minRadius = 0.82, size = 1.2, labels = "PBS")
 }
 
 ## Track for iHS
 for (chr in chromosomes2) {
   tracks = tracks + BioCircosSNPTrack("SNPTrack2",chromosomes = chr, positions = ihs_pos[[paste(chr)]],
                                       values = ihs_values[[paste(chr)]], colors = "#ff764c", size = 1.5, 
-                                      maxRadius = 0.79, minRadius = 0.64) 
+                                      maxRadius = 0.79, minRadius = 0.64, labels = "iHS") 
 }
 
 ## Track for merged

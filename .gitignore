@@ -11,3 +11,6 @@ work*
 
 ## ignore test results
 ./test/results/*
+
+## ignore test data
+./test/data/*

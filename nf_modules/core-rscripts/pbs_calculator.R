@@ -14,13 +14,12 @@ args <- commandArgs(trailingOnly = T)
 # Uncomment for debbuging
 # Comment for production mode only
 #args[1] <- "."
-#args[2] <- "pbs_snp.png"
-#args[3] <- "pbs.tsv"
+#args[3] <- "0.2"
 
 ## Place args into named object
 file_dir <- args[1]
-jpg_file <- args[2]
-tsv_file <- args[3]
+tsv_file <- args[2]
+pcut <- args[3]
 
 ## Using function for reading
 fst_reader_snp<-function(filename,pops){
@@ -84,7 +83,7 @@ pbsresults$PBS_value[which(pbsresults$PBS_value<0)]<-0
 arreglado <- pbsresults[order(-pbsresults$PBS_value),]
 
 ## Saving df
-write.table(arreglado, file = tsv_file, col.names = T, row.names = F, sep = "\t")
+write.table(arreglado, file = "pbs.tsv", col.names = T, row.names = F, sep = "\t")
 
 ## Making manhattan plot
 ## only 1-22, X o Y
@@ -135,7 +134,7 @@ man_uno.p <- ggplot( data = adjusted.df,
 ## Creating basic plot
 # Vamos a cambiar la escala de colores, a algo mas estandar
 man_dos.p <- man_uno.p +
-  scale_color_manual( values = rep(c("#F95738","#1B998B"), 12 ))
+  scale_color_manual( values = rep(c("#abdda4","#66c2a5"), 12 ))
 
 # vamos a poner los nombres de los cromosomas
 man_tres.p <- man_dos.p +
@@ -144,7 +143,8 @@ man_tres.p <- man_dos.p +
                       expand = c(0.02, 0.5)) 
 
 # Agregamos una linea roja con el corte de PBS
-PBS_cutoff <- 0.8
+pcut <- as.numeric(pcut)
+PBS_cutoff <- pcut
 man_cuatro.p <- man_tres.p +
   geom_hline( yintercept = PBS_cutoff,     
               color = "#2B2C28", lty = "dashed")        
@@ -163,16 +163,17 @@ man_cinco.p <- man_cuatro.p +
 man_seis.p <- man_cinco.p +
   theme(axis.title.x = element_text(margin=margin(10,0,0,0), face = "bold", color = "grey20"),
         axis.title.y = element_text(margin=margin(0,10,0,0), face = "bold", color = "grey20"),
-        plot.title=element_text(size=15,face="bold", color = "grey20"))
+        plot.title=element_text(size=20,face="bold", color = "grey20"))
 
 # Makin bar plot
 p1 <- ggplot(data = arreglado, mapping = aes(x = PBS_value)) +
-  geom_histogram(color="#EE964B", fill="#EE964B", alpha=0.2) +
+  geom_histogram(color="#abdda4", fill="#abdda4", alpha=0.2) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_x_continuous(expand = c(0.02, 0)) +
-  theme_bw() +
-  theme(axis.title.x = element_text(margin=margin(10,0,0,0), face = "bold", color = "grey20"),
+  theme_light(base_size = 12) +
+  theme(panel.grid = element_blank(),
+        axis.title.x = element_text(margin=margin(10,0,0,0), face = "bold", color = "grey20"),
         axis.title.y = element_text(margin=margin(0,10,0,0), face = "bold", color = "grey20"),
         plot.title=element_text(size=15,face="bold", color = "grey20")) +
   labs(title = paste("PBS by SNP"),
@@ -261,14 +262,14 @@ spider_uno.p <- fixed_data.df %>%
   filter(SNP == row_name) %>%
   filter(AF == fst_values) %>%
   ggplot( mapping = aes(x = AF, y = valor) ) +
-  geom_point( size = 3, color = "#49697F" )
+  geom_point( size = 3, color = "#66c2a5" )
 spider_uno.p
 
 ## Using geom segment geometry
 spider_dos.p <- spider_uno.p +
   geom_segment(
     aes( x = AF, xend = AF,
-         y = 0.0, yend = valor), color = "#49697F", size = 1
+         y = 0.0, yend = valor), color = "#66c2a5", size = 1
   )
 spider_dos.p
 
@@ -308,12 +309,20 @@ spider_seis.p
 
 ## Merging
 grid1 <- plot_grid(p1, spider_seis.p, align = "h", labels = c('B', 'C'))
-grid2 <- plot_grid(man_seis.p, grid1, align = "h", labels = 'A', nrow = 2)
+grid2 <- plot_grid(man_seis.p, align = "h", labels = 'A')
 
-# Guardar plot
-ggsave(filename = jpg_file, 
+# Save manhattan
+ggsave(filename = "pbs_manhattan.png", 
        plot = grid2, 
        device = "png",
-       width = 15, height = 11, units = "in",
+       width = 15, height = 8, units = "in",
+       bg = "white",
+       dpi = 300)
+
+# Save spider and histogram
+ggsave(filename = "pbs_histogram_spider.png", 
+       plot = grid1, 
+       device = "png",
+       width = 15, height = 8, units = "in",
        bg = "white",
        dpi = 300)

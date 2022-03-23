@@ -73,6 +73,8 @@ write.table(x = final_ihs_vcf, file = tsv_file,
             quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
 
 ## Lets beggin plotting
+final_ihs_vcf <- vroom("final_ihs.tsv")
+
 ## First, a manhattan plot
 ## only 1-22, X o Y
 valid_chroms <- c(1:22, "X", "Y")
@@ -121,7 +123,7 @@ man_uno.p <- ggplot( data = adjusted.df,
 ## Creating basic plot
 # Changing color scale
 man_dos.p <- man_uno.p +
-  scale_color_manual( values = rep(c("#F95738","#1B998B"), 12 ))
+  scale_color_manual( values = rep(c("#BDE4A8","#9CC69B"), 12 ))
 
 # Adding chr names
 man_tres.p <- man_dos.p +
@@ -149,7 +151,7 @@ man_cinco.p <- man_cuatro.p +
 man_seis.p <- man_cinco.p +
   theme(axis.title.x = element_text(margin=margin(10,0,0,0), face = "bold", color = "grey20"),
         axis.title.y = element_text(margin=margin(0,10,0,0), face = "bold", color = "grey20"),
-        plot.title=element_text(size=15,face="bold", color = "grey20"))
+        plot.title=element_text(size=20,face="bold", color = "grey20"))
 
 # Finally, Manhattan plot
 ggsave(filename = png_file, 
@@ -161,7 +163,7 @@ ggsave(filename = png_file,
 
 # Making bar plot
 p1 <- ggplot(data = final_ihs_vcf, mapping = aes(x = Std_iHS)) +
-  geom_histogram( color="#EE964B", fill="#EE964B", alpha=0.2) +
+  geom_histogram( color="#CAEBB1", fill="#CAEBB1", alpha=0.2) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
   scale_x_continuous(expand = c(0.02, 0)) +

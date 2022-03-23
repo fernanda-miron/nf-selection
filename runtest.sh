@@ -9,6 +9,7 @@ echo -e "======\n Testing NF execution \n======" \
 	--input_pbs $input_pbs \
 	--output_dir $output_directory \
 	--cutoff 2 \
+	--pcutoff 0.2 \
 	--maff 0.01 \
 	--mart "test/data/pbs_files/mart_export.txt" \
 	--imart "test/data/ihs_files/mart_export.txt" \
