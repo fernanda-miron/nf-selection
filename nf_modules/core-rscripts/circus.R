@@ -18,8 +18,8 @@ args <- commandArgs(trailingOnly = T)
 ## Place args into named object
 pbs_file <- args[1]
 ihs_file <- args[2]
-p_cut <- args[1]
-i_cut <- args[2]
+p_cut <- args[3]
+i_cut <- args[4]
 
 ## Up data frame 
 pbs <- vroom(pbs_file)
@@ -218,4 +218,4 @@ tracks = tracks + BioCircosBackgroundTrack("testBGtrack1", minRadius = 0.46, max
 circleplot <- BioCircos(tracks, displayGenomeBorder = F)
 
 ##
-htmltools::save_html(html = circleplot, file = "circleplot.html")
+htmlwidgets::saveWidget(widget = circleplot, file = "circleplot.html")
