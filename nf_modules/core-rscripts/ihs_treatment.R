@@ -57,8 +57,8 @@ changed_vcf2 <- as.data.frame(changed_vcf)
 
 ## Getting the column of interest
 colum_of_interest <- changed_vcf2 %>% 
-  select(V2) %>% 
-  rename(POS = V2)
+  select(V1) %>% 
+  rename(POS = V1)
 
 ## Merging column of interest to original data 
 final_ihs_vcf <- all_ihs %>% 
@@ -67,13 +67,11 @@ final_ihs_vcf <- all_ihs %>%
 ## Getting absolute value of iHS
 final_ihs_vcf$Std_iHS <- abs(final_ihs_vcf$Std_iHS)
 final_ihs_vcf$iHS <- abs(final_ihs_vcf$iHS)
+final_ihs_vcf <- final_ihs_vcf[complete.cases(final_ihs_vcf), ]
 
 ## Lets save the table
 write.table(x = final_ihs_vcf, file = tsv_file, 
             quote = FALSE, col.names = TRUE, row.names = FALSE, sep = "\t")
-
-## Lets beggin plotting
-final_ihs_vcf <- vroom("final_ihs.tsv")
 
 ## First, a manhattan plot
 ## only 1-22, X o Y
@@ -94,7 +92,7 @@ clean_data.df <- final_ihs_vcf %>%
 single_axis.df <- clean_data.df %>% 
   # Compute chromosome size
   group_by( CHR_ID ) %>% 
-  summarize(chr_len = max( CHR_POS) ) %>%
+  summarize(chr_len = max( CHR_POS, na.rm = TRUE) ) %>%
   # Calculate cumulative position of each chromosome
   mutate( chr_start_on_x = cumsum(chr_len) - chr_len) %>%
   select( -chr_len )

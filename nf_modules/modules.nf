@@ -9,21 +9,23 @@ process phasing_with_ref {
 publishDir "${results_dir}/phasing_with_ref", mode:"copy"
 
 	input:
-	tuple val(chromosome), path(path_vcf), path(path_hap), path(path_legend), path(path_sample), path(path_genetic_map), path(path_strand_exclude)
+	tuple val(chromosome), path(path_vcf), path(path_genetic_map), path(path_reference_vcf), path(path_index_reference)
 
 	output:
 	tuple val(chromosome), path("${chromosome}.phased.with.ref.vcf")
 
 	"""
-	shapeit --input-vcf ${path_vcf} \
-        -M ${path_genetic_map} \
-        --input-ref ${path_hap} ${path_legend} ${path_sample} \
-				--exclude-snp ${path_strand_exclude} \
-        -O ${chromosome}.phased.with.ref
+	tabix -p vcf ${path_vcf}
 
-	shapeit -convert \
-	--input-haps ${chromosome}.phased.with.ref \
-			        --output-vcf ${chromosome}.phased.with.ref.vcf
+	awk '{print \$4, \$1, \$3}' ${path_genetic_map} > file_1
+	echo -e "pos\tchr\tcM" > file_2
+	cat file_2 file_1 > genetic_map
+
+	shapeit4.2 --input ${path_vcf} \
+	--map genetic_map \
+	--region ${chromosome} \
+	--reference ${path_reference_vcf} \
+	--output ${chromosome}.phased.with.ref.vcf
 	"""
 }
 
@@ -39,21 +41,6 @@ publishDir "${results_dir}/IMPUTE_format_file/", mode:"copy"
 
 	"""
 	vcftools --vcf ${path_files} --IMPUTE --out chr${chromosome}
-	"""
-}
-
-process generating_map {
-
-publishDir "${results_dir}/hapbin_genetic_map/", mode:"copy"
-
-	input:
-	tuple val(chromosome), path(path_legend), path(path_sample), path(path_genetic_map)
-
-	output:
-	tuple val(chromosome), path("chr${chromosome}.map")
-
-	"""
-	make_map.py --chromosome ${chromosome}
 	"""
 }
 

@@ -229,17 +229,8 @@ if (params.notphased) {
 	Channel
 	    .fromPath(params.input_ihs)
 	    .splitCsv(header:true)
-			.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_hap), file(row.path_legend), file(row.path_sample), file(row.path_genetic_map), file(row.path_strand_exclude)] }
+			.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_genetic_map), file(row.path_reference_vcf), file(row.path_index_reference)] }
 	    .set{ samples_ihs}
-}
-
-/* Load files from iHS design file for genetic map generation */
-if (!params.genetic_map) {
-	Channel
-			.fromPath(params.input_ihs)
-			.splitCsv(header:true)
-			.map{ row -> [ row.chromosome, file(row.path_legend), file(row.path_sample), file(row.path_genetic_map)] }
-			.set{ samples_genetic_map}
 }
 
 /* Load files from iHS design file for phased vcfs*/
@@ -247,17 +238,15 @@ if (!params.notphased)
 Channel
 		.fromPath(params.input_ihs)
 		.splitCsv(header:true)
-		.map{ row -> [ row.chromosome, file(row.path_vcf)] }
+		.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_genetic_map)] }
 		.set{ samples_phased}
 
-/* Load files from iHS design file for phased vcfs*/
-if (params.genetic_map) {
+/* Load files from iHS design file for genetic map generation */
 	Channel
-			 .fromPath(params.input_ihs)
-			 .splitCsv(header:true)
-			 .map{ row -> [ row.chromosome, file(row.path_genetic_map)] }
-			 .set{ samples_with_map}
-}
+		.fromPath(params.input_ihs)
+		.splitCsv(header:true)
+		.map{ row -> [row.chromosome, file(row.path_genetic_map)] }
+		.set{ genetic_map}
 
 /* Load maff value for iHS if applied */
 if (params.maff) maff = Channel.value(params.maff)
@@ -298,10 +287,10 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
 
 /* Import modules
 */
- include {phasing_with_ref; vcf_to_hap; generating_map;
-	 ihs_computing; add_chromosome; merging_chromosomes;
-	 fst_calculation; fst_calculation_2; fst_calculation_3;
-	 af_1; af_2; af_3; pbs_by_snp; ggf_format; pbs_annotation;
+ include {phasing_with_ref; vcf_to_hap;ihs_computing;
+	 add_chromosome; merging_chromosomes;fst_calculation;
+	 fst_calculation_2; fst_calculation_3;af_1;
+	 af_2; af_3; pbs_by_snp; ggf_format; pbs_annotation;
 	 ihs_ggf_format; ihs_annotation; merged_results} from './nf_modules/modules.nf'
 
 /*
@@ -315,11 +304,7 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
 		 p1 = samples_phased
 	 }
 	 p2 = vcf_to_hap(p1)
-	 if (params.genetic_map) {
-		 p3 = samples_with_map
-	 } else {
-		 p3 = generating_map(samples_genetic_map)
-	 }
+	 p3 = genetic_map
 	 p4 = p2.combine(p3, by: 0)
 	 if (params.maff) {
 		 p5 = ihs_computing(p4, maff)

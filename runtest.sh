@@ -8,6 +8,7 @@ echo -e "======\n Testing NF execution \n======" \
 	--input_ihs $input_ihs \
 	--input_pbs $input_pbs \
 	--output_dir $output_directory \
+	--notphased \
 	--cutoff 2 \
 	--pcutoff 0.2 \
 	--maff 0.01 \
