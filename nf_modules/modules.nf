@@ -23,7 +23,7 @@ publishDir "${results_dir}/phasing_with_ref", mode:"copy"
 
 	shapeit4.2 --input ${path_vcf} \
 	--map genetic_map \
-	--region ${chromosome} \
+	--region chr${chromosome} \
 	--reference ${path_reference_vcf} \
 	--output ${chromosome}.phased.with.ref.vcf
 	"""
