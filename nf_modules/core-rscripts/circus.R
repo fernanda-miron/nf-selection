@@ -25,23 +25,22 @@ i_cut <- args[4]
 pbs <- vroom(pbs_file)
 ihs <- vroom(ihs_file)
 
-## Remove inf
-winf <- pbs[!is.infinite(rowSums(pbs)),]
-
 ## Filter dataframe to only keep snps with higher PBS value
-significative_pbs <- winf %>% 
-  filter(PBS_value > 0.8)
+significative_pbs <- pbs %>% 
+  filter(PBS_value > p_cut)
 
 ## Filter dataframe to only keep snps with higher iHS value
 significative_ihs <- ihs %>% 
-  filter(Std_iHS > 5)
+  filter(Std_iHS > i_cut)
 
 ## Filter to get SNPs from iHS and PBS
 ## First, lets get the top 1% of PBS
-arrange_PBS <- winf[with(winf, order(-PBS_value)),]
+arrange_PBS <- pbs[with(pbs, order(-PBS_value)),]
 
 ## Get the 1% 
 top_PBS <- head(arrange_PBS, (nrow(arrange_PBS)*0.01))
+top_PBS <- top_PBS %>% 
+  mutate(CHROM = as.numeric(CHROM))
 
 ## Filter to get SNPs from iHS and PBS
 ## Now from iHS
