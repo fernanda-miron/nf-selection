@@ -84,7 +84,7 @@ arreglado <- pbsresults[order(-pbsresults$PBS_value),]
 
 ## Go from chr1 to 1
 arreglado2 <- arreglado %>% 
-  mutate(CHROM = str_remove_all(arreglado$CHROM, "chr")) %>% 
+  mutate(CHROM = str_remove_all(arreglado$CHROM, "chr")) %>%
   arrange(CHROM)
 
 ## Saving df
@@ -198,8 +198,16 @@ AF_1 <- read.table(file = frq.names[1], sep = "\t",
 
 ## Changing df format
 colnames(AF_1) <- c("CHROM", "POS", "N_ALLELES", "N_CHR", "AF1_1", "AF2_1")
-AF_1 <- transform(AF_1, CHROM = as.numeric(CHROM))
-AF_1 <- transform(AF_1, POS = as.numeric(POS))
+
+## Changing X to 23
+AF_1[AF_1 == "chrX"] <- 23
+
+## Change X for 23, change chr1 to 1, make POS and CHROM numeric
+AF_1 <- AF_1 %>% 
+  mutate(CHROM = str_remove_all(AF_1$CHROM, "chr")) %>%
+  mutate(CHROM = as.numeric(CHROM)) %>% 
+  mutate(POS = as.numeric(POS)) %>%
+  arrange(CHROM)
 
 ## Reading second dataframe
 AF_2 <- read.table(file = frq.names[2], sep = "\t",
@@ -208,8 +216,16 @@ AF_2 <- read.table(file = frq.names[2], sep = "\t",
 
 ## Changing df format
 colnames(AF_2) <- c("CHROM", "POS", "N_ALLELES", "N_CHR", "AF1_2", "AF2_2")
-AF_2 <- transform(AF_2, CHROM = as.numeric(CHROM))
-AF_2 <- transform(AF_2, POS = as.numeric(POS))
+
+## Changing X to 23
+AF_2[AF_2 == "chrX"] <- 23
+
+## Change X for 23, change chr1 to 1, make POS and CHROM numeric
+AF_2 <- AF_2 %>% 
+  mutate(CHROM = str_remove_all(AF_2$CHROM, "chr")) %>%
+  mutate(CHROM = as.numeric(CHROM)) %>% 
+  mutate(POS = as.numeric(POS)) %>%
+  arrange(CHROM)
 
 ## Reading third dataframe
 AF_3 <- read.table(file = frq.names[3], sep = "\t",
@@ -218,11 +234,24 @@ AF_3 <- read.table(file = frq.names[3], sep = "\t",
 
 ## Changing df format
 colnames(AF_3) <- c("CHROM", "POS", "N_ALLELES", "N_CHR", "AF1_3", "AF2_3")
-AF_3 <- transform(AF_3, CHROM = as.numeric(CHROM))
-AF_3 <- transform(AF_3, POS = as.numeric(POS))
+
+## Changing X to 23
+AF_3[AF_3 == "chrX"] <- 23
+
+## Change X for 23, change chr1 to 1, make POS and CHROM numeric
+AF_3 <- AF_3 %>% 
+  mutate(CHROM = str_remove_all(AF_3$CHROM, "chr")) %>%
+  mutate(CHROM = as.numeric(CHROM)) %>% 
+  mutate(POS = as.numeric(POS)) %>%
+  arrange(CHROM)
+
+## Change principal data
+changed.df <- arreglado2 %>%
+  mutate( CHROM = gsub( pattern = "X", replacement = "23", x = CHROM )) %>% 
+  mutate(CHROM = as.numeric(CHROM))
 
 ## Merge data
-merged_data.df <- arreglado2 %>% left_join(AF_1,
+merged_data.df <- changed.df %>% left_join(AF_1,
                                           by = c("CHROM"="CHROM", "POS"="POS")) %>%
   left_join(AF_2, by = c("CHROM"="CHROM","POS"="POS","N_ALLELES" = "N_ALLELES")) %>%
   left_join(AF_3, by = c("CHROM"="CHROM","POS"="POS","N_ALLELES" = "N_ALLELES")) %>%
