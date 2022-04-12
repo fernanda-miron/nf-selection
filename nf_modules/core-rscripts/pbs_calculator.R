@@ -7,6 +7,7 @@ library("ggplot2")
 library("scales")
 library("tidyr")
 library("cowplot")
+library("stringr")
 
 ## Read args from command line
 args <- commandArgs(trailingOnly = T)
@@ -14,12 +15,11 @@ args <- commandArgs(trailingOnly = T)
 # Uncomment for debbuging
 # Comment for production mode only
 #args[1] <- "."
-#args[3] <- "0.2"
+#args[2] <- "0.2"
 
 ## Place args into named object
 file_dir <- args[1]
-tsv_file <- args[2]
-pcut <- args[3]
+pcut <- args[2]
 
 ## Using function for reading
 fst_reader_snp<-function(filename,pops){
@@ -82,15 +82,20 @@ pbsresults$PBS_value[which(pbsresults$PBS_value<0)]<-0
 # Arranging data to see values
 arreglado <- pbsresults[order(-pbsresults$PBS_value),]
 
+## Go from chr1 to 1
+arreglado2 <- arreglado %>% 
+  mutate(CHROM = str_remove_all(arreglado$CHROM, "chr")) %>% 
+  arrange(CHROM)
+
 ## Saving df
-write.table(arreglado, file = "pbs.tsv", col.names = T, row.names = F, sep = "\t")
+write.table(arreglado2, file = "pbs.tsv", col.names = T, row.names = F, sep = "\t", quote = F)
 
 ## Making manhattan plot
 ## only 1-22, X o Y
 valid_chroms <- c(1:22, "X", "Y")
 
 #cleaning for only valid chrs 
-clean_data.df <- arreglado %>%
+clean_data.df <- arreglado2 %>%
   filter( CHROM %in% valid_chroms ) %>%
   ##Para poder ver chrom X y Y, los renumeramos a 23 y 24 respectivamente
   mutate( CHROM = gsub( pattern = "X", replacement = "23", x = CHROM ),
@@ -166,7 +171,7 @@ man_seis.p <- man_cinco.p +
         plot.title=element_text(size=20,face="bold", color = "grey20"))
 
 # Makin bar plot
-p1 <- ggplot(data = arreglado, mapping = aes(x = PBS_value)) +
+p1 <- ggplot(data = arreglado2, mapping = aes(x = PBS_value)) +
   geom_histogram(color="#abdda4", fill="#abdda4", alpha=0.2) +
   scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                 labels = trans_format("log10", math_format(10^.x))) +
@@ -217,7 +222,7 @@ AF_3 <- transform(AF_3, CHROM = as.numeric(CHROM))
 AF_3 <- transform(AF_3, POS = as.numeric(POS))
 
 ## Merge data
-merged_data.df <- arreglado %>% left_join(AF_1,
+merged_data.df <- arreglado2 %>% left_join(AF_1,
                                           by = c("CHROM"="CHROM", "POS"="POS")) %>%
   left_join(AF_2, by = c("CHROM"="CHROM","POS"="POS","N_ALLELES" = "N_ALLELES")) %>%
   left_join(AF_3, by = c("CHROM"="CHROM","POS"="POS","N_ALLELES" = "N_ALLELES")) %>%
