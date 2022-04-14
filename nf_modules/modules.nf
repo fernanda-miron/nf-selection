@@ -316,7 +316,7 @@ process merged_results_preparation {
 	path "pbs.gff", emit: pbs_gff
 
 	"""
-	Rscript --vanilla pbs_format.R ${p19} ${biomart}
+	Rscript --vanilla pbs_vs_ihs_treatment.R ${p19} ${biomart}
 	"""
 }
 
