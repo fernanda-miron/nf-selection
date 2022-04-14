@@ -272,6 +272,8 @@ if (params.pmerged) pmerged = Channel.value(params.pmerged)
 /* Load rscript for iHS ihs_treatment */
 r_script_ihs = Channel.fromPath("nf_modules/core-rscripts/ihs_treatment.R")
 
+
+
 /* Load files from PBS design file */
 Channel
     .fromPath(params.input_pbs)
@@ -284,6 +286,7 @@ r_script_pbs = Channel.fromPath("nf_modules/core-rscripts/pbs_calculator.R")
 r_script_format_pbs = Channel.fromPath("nf_modules/core-rscripts/pbs_format.R")
 r_script_format_ihs = Channel.fromPath("nf_modules/core-rscripts/ihs_format.R")
 r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
+r_script_pbs_vs_ihs = Channel.fromPath("nf_modules/core-rscripts/pbs_vs_ihs_treatment.R")
 
 /* Import modules
 */
@@ -291,7 +294,8 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
 	 add_chromosome; merging_chromosomes;fst_calculation;
 	 fst_calculation_2; fst_calculation_3;af_1;
 	 af_2; af_3; pbs_by_snp; ggf_format; pbs_annotation;
-	 ihs_ggf_format; ihs_annotation; merged_results} from './nf_modules/modules.nf'
+	 ihs_ggf_format; ihs_annotation; merged_results;
+	 merged_results_preparation; merged_results_annotation} from './nf_modules/modules.nf'
 
 /*
 * main pipeline logic
@@ -343,4 +347,6 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
 	 } else {
 		 p19 = merged_results(p16.png_tsv, p8.ihs_tsv, 0.2, 2, r_script_merge)
 	 }
+	 p20 = merged_results_preparation(p19.tsv_file, mart_file, r_script_pbs_vs_ihs)
+	 p21 = merged_results_annotation(p20.pbs_gff, p20.biomart_gff)
  }

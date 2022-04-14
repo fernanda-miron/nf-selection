@@ -295,9 +295,45 @@ process merged_results {
 
 	output:
 	path "*.html", emit: html_file
-	path "*.tsv", emit: tsv_file
+	path "filtered_pbs_vs_ihs.tsv", emit: tsv_file
 
 	"""
 	Rscript --vanilla circus.R ${p16} ${p8} ${p_cut} ${i_cut}
+	"""
+}
+
+process merged_results_preparation {
+
+	publishDir "${results_dir}/pbs_vs_ihs_annotation_prep/", mode:"symlink"
+
+	input:
+	file p19
+	file biomart
+	file merged_script
+
+	output:
+	path "biomart.gff", emit: biomart_gff
+	path "pbs.gff", emit: pbs_gff
+
+	"""
+	Rscript --vanilla pbs_format.R ${p17} ${biomart}
+	"""
+}
+
+process merged_results_annotation {
+
+	publishDir "${results_dir}/pbs_vs_ihs_annotation/", mode:"symlink"
+
+	input:
+	file p20_pbs
+	file p20_gff
+
+	output:
+	path "intersect_gff.tsv"
+
+	"""
+	bedtools intersect -a ${p20_pbs} -b ${p20_gff} -wa -wb  > temp_intersect_gff.tsv
+	cut -f1,4,9,18 temp_intersect_gff.tsv > temp.f1
+	echo -e "CHR\tPOS\tValue\tGene" | cat - temp.f1 > intersect_gff.tsv
 	"""
 }
