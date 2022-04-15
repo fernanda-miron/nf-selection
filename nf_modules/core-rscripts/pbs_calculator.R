@@ -79,13 +79,13 @@ pbsresults <- pbsresults %>%
 #set negative PBS values to 0 for convenience
 pbsresults$PBS_value[which(pbsresults$PBS_value<0)]<-0
 
-# Arranging data to see values
-arreglado <- pbsresults[order(-pbsresults$PBS_value),]
-
 ## Go from chr1 to 1
-arreglado2 <- arreglado %>% 
-  mutate(CHROM = str_remove_all(arreglado$CHROM, "chr")) %>%
+arreglado <- pbsresults %>% 
+  mutate(CHROM = str_remove_all(pbsresults$CHROM, "chr")) %>%
   arrange(CHROM)
+
+# Arranging data to see values
+arreglado2 <- arreglado[order(-arreglado$PBS_value),]
 
 ## Saving df
 write.table(arreglado2, file = "pbs.tsv", col.names = T, row.names = F, sep = "\t", quote = F)
