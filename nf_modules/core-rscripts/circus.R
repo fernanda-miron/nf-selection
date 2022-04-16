@@ -27,11 +27,11 @@ ihs <- vroom(ihs_file)
 
 ## Filter dataframe to only keep snps with higher PBS value
 significative_pbs <- pbs %>% 
-  filter(PBS_value > 0.2)
+  filter(PBS_value > p_cut)
 
 ## Filter dataframe to only keep snps with higher iHS value
 significative_ihs <- ihs %>% 
-  filter(Std_iHS > 2)
+  filter(Std_iHS > i_cut)
 
 ## Filter to get SNPs from iHS and PBS
 ## First, lets get the top 1% of PBS
@@ -39,6 +39,8 @@ arrange_PBS <- pbs[with(pbs, order(-PBS_value)),]
 
 ## Get the 1% 
 top_PBS <- head(arrange_PBS, (nrow(arrange_PBS)*0.01))
+top_PBS <- top_PBS %>% 
+  mutate(CHROM = as.numeric(CHROM))
 
 ## Filter to get SNPs from iHS and PBS
 ## Now from iHS
@@ -65,71 +67,138 @@ final2 <- final %>%
   mutate(label = paste("PBS =", PBS_value, "iHS =", Std_iHS)) %>% 
   filter(Std_iHS > i_cut & PBS_value > p_cut)
 
-## Filter selection
-final3 <- final2 %>% 
-  select(CHROM, POS, label)
-
 ## Write table with filters
-write.table(x = final3, file = "filtered_pbs_vs_ihs.tsv", sep = "\t", 
+write.table(x = final2, file = "filtered_pbs_vs_ihs.tsv", sep = "\t", 
             col.names = T, row.names = F, quote = F)
 
 ## Get a list with chromosomes for pbs
 chromosomes <- significative_pbs %>%
-  pull(CHROM)
+  pull(CHROM) %>% 
+  unique() %>% 
+  sort()
 
 ## Get a list with chromosomes for ihs
 chromosomes2 <- significative_ihs %>%
-  pull(CHROM)
+  pull(CHROM) %>% 
+  unique() %>% 
+  sort()
 
 ## Get a list with chromosomes for merging
 chromosomes3 <- final2 %>%
-  pull(CHROM)
+  pull(CHROM) %>% 
+  unique() %>% 
+  sort()
 
-## Get a list with pos for pbs
-positions <- significative_pbs %>%
-  pull(POS)
+## Making function for POS pbs
+pos_pbs <- function(X) {
+    significative_pbs %>% 
+    filter(CHROM == X) %>% 
+    pull(POS)
+}
 
-## Get a list with chromosomes for ihs
-positions2 <- significative_ihs %>%
-  pull(POS)
+## App. to all chrs
+map(chromosomes, pos_pbs) -> pbs_pos
 
-## Get a list with chromosomes for merging
-positions3 <- final2 %>%
-  pull(POS)
+##  Making function for PBS value
+values_pbs <- function(X) {
+    significative_pbs %>% 
+    filter(CHROM == X) %>% 
+    pull(PBS_value)
+}
 
-## Get a list with VALUE for pbs
-value <- significative_pbs %>%
-  pull(PBS_value)
+## App. to all chrs
+map(chromosomes, values_pbs) -> pbs_values
 
-## Get a list with chromosomes for ihs
-value2 <- significative_ihs %>%
-  pull(Std_iHS)
+## Making function for iHS pos
+pos_ihs <- function(X) {
+  significative_ihs %>% 
+    filter(CHROM == X) %>% 
+    pull(POS)
+}
 
-## Get a list with chromosomes for merging
-value3 <- final2 %>%
-  pull(value)
+## App. to all chrs
+map(chromosomes2, pos_ihs) -> ihs_pos
 
-## Get a list with chromosomes for merging
-labels <- final2 %>%
-  pull(label)
+##  Making function for ihs value
+values_ihs <- function(X) {
+  significative_ihs %>% 
+    filter(CHROM == X) %>% 
+    pull(Std_iHS)
+}
 
-## Track PBS
-tracks = BioCircosSNPTrack('SNPTrack', chromosomes = chromosomes, positions = positions,
-                           values = value, colors = "#abdda4", size = 1.2,  
+## App. to all chrs
+map(chromosomes2, values_ihs) -> ihs_values
+
+## Making function for iHSvsPBS pos
+pos_ivp <- function(X) {
+    final2 %>% 
+      filter(CHROM == X) %>% 
+      pull(POS)} 
+
+
+## App. to all chrs
+map(chromosomes3, pos_ivp) -> ivp_pos
+
+##  Making function for iHSvsPBS value
+values_ivp <- function(X) {
+  final2 %>% 
+    filter(CHROM == X) %>% 
+    pull(value)
+}
+
+## App. to all chrs
+map(chromosomes3, values_ivp) -> ivp_values
+
+##  Making function for iHSvsPBS label
+labels_ivp <- function(X) {
+  final2 %>% 
+    filter(CHROM == X) %>% 
+    pull(label)
+}
+
+## App. to all chrs
+map(chromosomes3, labels_ivp) -> ivp_labels
+
+## Name the lists for reproducibility
+names(pbs_pos) <- chromosomes
+names(pbs_values) <- chromosomes
+names(ihs_pos) <- chromosomes2
+names(ihs_values) <- chromosomes2
+names(ivp_pos) <- chromosomes3
+names(ivp_values) <- chromosomes3
+names(ivp_labels) <- chromosomes3
+
+## Begin track with min chromosome
+begginer <- min(chromosomes)
+
+## First track PBS
+
+tracks = BioCircosSNPTrack('SNPTrack', chromosomes = begginer, positions = pbs_pos[[paste(begginer)]],
+                           values = pbs_values[[paste(begginer)]], colors = "#abdda4", size = 1.2,  
                            maxRadius = 0.97, minRadius = 0.82, labels = "PBS")
 
+## Track for PBS
+for (chr in chromosomes) {
+  tracks = tracks + BioCircosSNPTrack('SNPTrack', chromosomes = chr, positions = pbs_pos[[paste(chr)]],
+                                      values = pbs_values[[paste(chr)]], colors = "#abdda4", 
+                                      maxRadius = 0.97, minRadius = 0.82, size = 1.2, labels = "PBS")
+}
+
 ## Track for iHS
-tracks = tracks + BioCircosSNPTrack("SNPTrack2",chromosomes = chromosomes2, positions = positions2,
-                                      values = value2, colors = "#ff764c", size = 1.2, 
+for (chr in chromosomes2) {
+  tracks = tracks + BioCircosSNPTrack("SNPTrack2",chromosomes = chr, positions = ihs_pos[[paste(chr)]],
+                                      values = ihs_values[[paste(chr)]], colors = "#ff764c", size = 1.5, 
                                       maxRadius = 0.79, minRadius = 0.64, labels = "iHS") 
+}
 
 ## Track for merged
 if (is_empty(chromosomes3) == F) {
-  tracks = tracks + BioCircosSNPTrack("SNPTrack3",chromosomes = chromosomes3, positions = positions3,
-                                      values = value3, colors = "#d53e4f", size = 3, 
-                                      maxRadius = 0.61, minRadius = 0.46, labels = labels, shape = "rect") 
+for (chr in chromosomes3) {
+  tracks = tracks + BioCircosSNPTrack("SNPTrack3",chromosomes = chr, positions = ivp_pos[[paste(chr)]],
+                                      values = ivp_values[[paste(chr)]], colors = "#d53e4f", size = 1.5, 
+                                      maxRadius = 0.61, minRadius = 0.46, labels = ivp_labels[[paste(chr)]]) 
+  }
 }
-
 
 ## Background tracks
 
