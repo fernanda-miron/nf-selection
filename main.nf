@@ -238,7 +238,7 @@ if (!params.notphased)
 Channel
 		.fromPath(params.input_ihs)
 		.splitCsv(header:true)
-		.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_genetic_map)] }
+			.map{ row -> [row.chromosome, file(row.path_vcf), file(row.path_genetic_map), file(row.path_ancestral), file(row.path_manifest)] }
 		.set{ samples_phased}
 
 /* Load files from iHS design file for genetic map generation */
@@ -270,9 +270,14 @@ if (params.imerged) imerged = Channel.value(params.imerged)
 if (params.pmerged) pmerged = Channel.value(params.pmerged)
 
 /* Load rscript for iHS ihs_treatment */
-r_script_ihs = Channel.fromPath("nf_modules/core-rscripts/ihs_treatment.R")
+params.java_script = "nf_modules/core-scripts/vcfancestralalleles.jar"
+params.java_annotation_script = "nf_modules/core-scripts/jvarkit.jar"
+params.annotation_script = "nf_modules/core-scripts/script.js"
+params.r_script_ihs = "nf_modules/core-rscripts/ihs_rehh.R"
+r_script_format_ihs = Channel.fromPath("nf_modules/core-rscripts/ihs_final.R")
 
-
+/* Path for annovar */
+annovar = Channel.fromPath("nf_modules/annovar")
 
 /* Load files from PBS design file */
 Channel
@@ -282,20 +287,14 @@ Channel
     .set{ samples_pbs}
 
 /* Load rscript for PBS calculation and treatment */
-r_script_pbs = Channel.fromPath("nf_modules/core-rscripts/pbs_calculator.R")
-r_script_format_pbs = Channel.fromPath("nf_modules/core-rscripts/pbs_format.R")
-r_script_format_ihs = Channel.fromPath("nf_modules/core-rscripts/ihs_format.R")
-r_script_merge = Channel.fromPath("nf_modules/core-rscripts/circus.R")
-r_script_pbs_vs_ihs = Channel.fromPath("nf_modules/core-rscripts/pbs_vs_ihs_treatment.R")
+r_script_pbs = Channel.fromPath("nf_modules/core-rscripts/pbs_calculator_final.R")
+r_script_merge = Channel.fromPath("nf_modules/core-rscripts/merging_pbs_ihs.R")
 
 /* Import modules
 */
- include {phasing_with_ref; vcf_to_hap;ihs_computing;
-	 add_chromosome; merging_chromosomes;fst_calculation;
+ include {phasing_with_ref; ancestral_annotation; ancestral_vcf; ihs_rehh; ihs_images; fst_calculation;
 	 fst_calculation_2; fst_calculation_3;af_1;
-	 af_2; af_3; pbs_by_snp; ggf_format; pbs_annotation;
-	 ihs_ggf_format; ihs_annotation; merged_results;
-	 merged_results_preparation; merged_results_annotation} from './nf_modules/modules.nf'
+	 af_2; af_3; pbs_by_snp; merged_results; filter_vcf; annotation} from './nf_modules/modules.nf'
 
 /*
 * main pipeline logic
@@ -307,25 +306,15 @@ r_script_pbs_vs_ihs = Channel.fromPath("nf_modules/core-rscripts/pbs_vs_ihs_trea
 	 } else {
 		 p1 = samples_phased
 	 }
-	 p2 = vcf_to_hap(p1)
-	 p3 = genetic_map
-	 p4 = p2.combine(p3, by: 0)
-	 if (params.maff) {
-		 p5 = ihs_computing(p4, maff)
-	 } else {
-		 p5 = ihs_computing(p4, 0.01)
-	 }
-	 p6 = add_chromosome(p5)
-	 p7 = p6.collect()
-	 if (params.cutoff) {
-		 p8 = merging_chromosomes(p7, r_script_ihs, cutoff)
-	 } else {
-		 p8 = merging_chromosomes(p7, r_script_ihs, 2)
-	 }
-	 if (params.imart) {
-		 p8_a = ihs_ggf_format(p8.ihs_tsv, imart_file, r_script_format_ihs)
-		 p8_b = ihs_annotation(p8_a.ihs_gff, p8_a.biomart_gff)
-	 }
+	 java_script = file(params.java_script)
+	 p2 = ancestral_annotation(java_script, p1)
+	 java_annotation_script = file(params.java_annotation_script)
+	 annotation_script = file(params.annotation_script)
+	 p3 = ancestral_vcf(java_annotation_script,annotation_script,p2)
+	 r_script_ihs = file(params.r_script_ihs)
+	 p4 = ihs_rehh(r_script_ihs, p3)
+	 p5 = p4.collect()
+	 p6 = ihs_images(p5, r_script_format_ihs)
 	 p9 = fst_calculation(samples_pbs)
 	 p10 = fst_calculation_2(samples_pbs)
 	 p11 = fst_calculation_3(samples_pbs)
@@ -333,20 +322,8 @@ r_script_pbs_vs_ihs = Channel.fromPath("nf_modules/core-rscripts/pbs_vs_ihs_trea
 	 p13 = af_2(samples_pbs)
 	 p14 = af_3(samples_pbs)
 	 p15 = p9.mix(p10,p11,p12,p13,p14).toList()
-	 if (params.pcutoff) {
-		 p16 = pbs_by_snp(p15, pcutoff, r_script_pbs)
-	 } else {
-		 p16 = pbs_by_snp(p15, 0.2, r_script_pbs)
-	 }
-	 if (params.mart){
-		 p17 = ggf_format(p16.png_tsv, mart_file, r_script_format_pbs)
-		 p18 = pbs_annotation(p17.pbs_gff, p17.biomart_gff)
-	 }
-	 if (params.imerged && params.pmerged) {
-		 p19 = merged_results(p16.png_tsv, p8.ihs_tsv, pmerged, imerged ,r_script_merge)
-	 } else {
-		 p19 = merged_results(p16.png_tsv, p8.ihs_tsv, 0.2, 2, r_script_merge)
-	 }
-	 p20 = merged_results_preparation(p19.tsv_file, mart_file, r_script_pbs_vs_ihs)
-	 p21 = merged_results_annotation(p20.pbs_gff, p20.biomart_gff)
+	 p16 = pbs_by_snp(p15,r_script_pbs)
+	 p17 = merged_results(p16.one_percent_tsv,p6.ihs_tsv_one_percent,r_script_merge)
+	 p18 = filter_vcf(samples_pbs, p17.bed_file)
+	 p19 = annotation(annovar,p18)
  }

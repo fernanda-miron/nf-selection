@@ -9,7 +9,7 @@ process phasing_with_ref {
 publishDir "${results_dir}/phasing_with_ref", mode:"copy"
 
 	input:
-	tuple val(chromosome), path(path_vcf), path(path_genetic_map), path(path_reference_vcf), path(path_index_reference)
+	tuple val(chromosome), path(path_vcf), path(path_genetic_map), path(path_reference_vcf), path(path_index_reference), path(path_ancestral), path(manifest)
 
 	output:
 	tuple val(chromosome), path("${chromosome}.phased.with.ref.vcf")
@@ -29,103 +29,76 @@ publishDir "${results_dir}/phasing_with_ref", mode:"copy"
 	"""
 }
 
-process vcf_to_hap {
+process ancestral_annotation{
 
-publishDir "${results_dir}/IMPUTE_format_file/", mode:"copy"
+publishDir "${results_dir}/annotated_vcf/", mode:"copy"
 
 	input:
-	tuple val(chromosome), path(path_files)
+	file java_script
+	tuple val(chromosome), path(path_files), path(path_genetic_map), path(path_ancestral), path(manifest)
 
 	output:
-	tuple val(chromosome), path("chr${chromosome}.*.hap")
+	tuple val(chromosome), path("chr${chromosome}_aa.vcf")
 
 	"""
-	vcftools --vcf ${path_files} --IMPUTE --out chr${chromosome}
+	samtools faidx ${path_ancestral}
+
+	java -jar ${java_script} \
+	-m ${manifest} \
+	${path_files} |\
+	bcftools annotate -x '^INFO/AA' > chr${chromosome}_aa.vcf
 	"""
 }
 
-process ihs_computing {
 
-publishDir "${results_dir}/ihs_results/", mode:"copy"
+process ancestral_vcf{
+
+publishDir "${results_dir}/ancestral_annotated_vcf/", mode:"copy"
 
 	input:
-	tuple val(chromosome), path(path_hap), path(path_map)
-	val maff
+	file java_annotation_script
+	file annotation_script
+	tuple val(chromosome), path(path_ancestral_files)
 
 	output:
-	tuple val(chromosome), path("chr${chromosome}.ihs_file")
+	tuple val(chromosome), path("final_annotated_${chromosome}.vcf")
 
 	"""
-	ihsbin --hap ${path_hap} --map ${path_map} --minmaf ${maff} --out chr${chromosome}.ihs_file
+	java -jar ${java_annotation_script} vcffilterjdk -f ${annotation_script} ${path_ancestral_files} > final_annotated_${chromosome}.vcf
 	"""
 }
 
-process add_chromosome {
+process ihs_rehh {
 
-publishDir "${results_dir}/ihs_results_chr/", mode:"copy"
+publishDir "${results_dir}/ihs_compute/", mode:"copy"
 
 	input:
-	tuple val(chromosome), path(path_files)
+	file r_script_ihs
+	tuple val(chromosome), path(path_ancestral_files)
 
 	output:
-	path("add.chr${chromosome}.ihs_file")
+	tuple path("ihs_${chromosome}.tsv")
 
 	"""
-	awk '{print \$0, "\t${chromosome}"}' ${path_files} >  add.chr${chromosome}.ihs_file
+	Rscript --vanilla ${r_script_ihs} ${path_ancestral_files} ihs_${chromosome}.tsv
 	"""
 }
 
-process merging_chromosomes {
+process ihs_images {
 
 publishDir "${results_dir}/all_chr_ihs/", mode:"copy"
 
 	input:
 	path(path_files)
 	file rscript
-	val cutoff
 
 	output:
 	path "*.png", emit: ihs_plots
-	path "*.tsv", emit: ihs_tsv
+	path "final_ihs_onepercent.tsv", emit: ihs_tsv_one_percent
+	path "final_ihs.tsv", emit: ihs_tsv
 
 	"""
-	Rscript --vanilla ihs_treatment.R . final_ihs.tsv ${cutoff} final_ihs.manhattan.png final_ihs.histogram.png
-	"""
-}
-
-process ihs_ggf_format {
-
-	publishDir "${results_dir}/ihs_as_ggf/",mode:"copy"
-
-	input:
-	file p8
-	file biomart
-	file r_script_format_ihs
-
-	output:
-	path "biomart.gff", emit: biomart_gff
-	path "ihs.gff", emit: ihs_gff
-
-	"""
-	Rscript --vanilla ihs_format.R ${p8} ${biomart}
-	"""
-}
-
-process ihs_annotation {
-
-	publishDir "${results_dir}/ihs_annotation/",mode:"copy"
-
-	input:
-	file p8_ihs
-	file p8_gff
-
-	output:
-	path "intersect_gff.tsv"
-
-	"""
-	bedtools intersect -a ${p8_ihs} -b ${p8_gff} -wa -wb  > temp_intersect_gff.tsv
-	cut -f1,4,9,18 temp_intersect_gff.tsv > temp.f1
-	echo -e "CHR\tPOS\tiHS_value\tGene" | cat - temp.f1 > intersect_gff.tsv
+	Rscript --vanilla ihs_final.R . final_ihs.tsv final_ihs_onepercent.tsv final_ihs.histogram.png
 	"""
 }
 
@@ -234,106 +207,66 @@ process pbs_by_snp {
 
 	input:
 	file p15
-	val pcutoff
 	file r_script_pbs
 
 	output:
 	path "*.png", emit: png_pbs
-	path "*.tsv*", emit: png_tsv
+	path "one_percent_pbs.tsv", emit: one_percent_tsv
+	path "pbs.tsv", emit: pbs_tsv
 
 	"""
-	Rscript --vanilla pbs_calculator.R . ${pcutoff}
-	"""
-}
-
-process ggf_format {
-
-	publishDir "${results_dir}/pbs_as_ggf/",mode:"copy"
-
-	input:
-	file p16
-	file biomart
-	file r_script_format_pbs
-
-	output:
-	path "biomart.gff", emit: biomart_gff
-	path "pbs.gff", emit: pbs_gff
-
-	"""
-	Rscript --vanilla pbs_format.R ${p16} ${biomart}
-	"""
-}
-
-process pbs_annotation {
-
-	publishDir "${results_dir}/pbs_annotation/",mode:"copy"
-
-	input:
-	file p17_pbs
-	file p17_gff
-
-	output:
-	path "intersect_gff.tsv"
-
-	"""
-	bedtools intersect -a ${p17_pbs} -b ${p17_gff} -wa -wb  > temp_intersect_gff.tsv
-	cut -f1,4,9,18 temp_intersect_gff.tsv > temp.f1
-	echo -e "CHR\tPOS\tPBS_value\tGene" | cat - temp.f1 > intersect_gff.tsv
+	Rscript --vanilla pbs_calculator_final.R .
 	"""
 }
 
 process merged_results {
 
-	publishDir "${results_dir}/pbs_vs_ihs/",mode:"symlink"
+	publishDir "${results_dir}/pbs_vs_ihs/",mode:"copy"
 
 	input:
 	file p16
 	file p8
-	val p_cut
-	val i_cut
 	file r_script_merged
 
 	output:
-	path "*.html", emit: html_file
-	path "filtered_pbs_vs_ihs.tsv", emit: tsv_file
+	path "circus.png", emit: png_file
+	path "pbs_vs_ihs.tsv", emit: tsv_file
+	path "final_bed", emit: bed_file
 
 	"""
-	Rscript --vanilla circus.R ${p16} ${p8} ${p_cut} ${i_cut}
-	"""
-}
-
-process merged_results_preparation {
-
-	publishDir "${results_dir}/pbs_vs_ihs_annotation_prep/", mode:"symlink"
-
-	input:
-	file p19
-	file biomart
-	file merged_script
-
-	output:
-	path "biomart.gff", emit: biomart_gff
-	path "pbs.gff", emit: pbs_gff
-
-	"""
-	Rscript --vanilla pbs_vs_ihs_treatment.R ${p19} ${biomart}
+	Rscript --vanilla merging_pbs_ihs.R ${p16} ${p8}
 	"""
 }
 
-process merged_results_annotation {
+process filter_vcf {
 
-	publishDir "${results_dir}/pbs_vs_ihs_annotation/", mode:"symlink"
+	publishDir "${results_dir}/filtered_vcf/",mode:"copy"
 
 	input:
-	file p20_pbs
-	file p20_gff
+	tuple path(path_vcf), path(path_pop1), path(path_pop2), path(path_popout)
+	file bed_file
 
 	output:
-	path "intersect_gff.tsv"
+	path "final_results.recode.vcf", emit: vcf_file
 
 	"""
-	bedtools intersect -a ${p20_pbs} -b ${p20_gff} -wa -wb  > temp_intersect_gff.tsv
-	cut -f1,4,9,18 temp_intersect_gff.tsv > temp.f1
-	echo -e "CHR\tPOS\tValue\tGene" | cat - temp.f1 > intersect_gff.tsv
+	vcftools --vcf ${path_vcf} --bed ${bed_file} --out final_results --recode
+	"""
+}
+
+process annotation {
+
+	publishDir "${results_dir}/annotation/",mode:"copy"
+
+	input:
+	path annovar
+	file vcf
+
+	output:
+	path "*annotation*", emit: vcf_file
+
+	"""
+	mv annovar/* .
+	perl table_annovar.pl -vcfinput ${vcf} . -buildver hg38 -out annotation -remove -protocol refGene,cytoBand,exac03,avsnp147,dbnsfp30a -operation gx,r,f,f,f -nastring . -polish -xref example/gene_xref.txt
 	"""
 }

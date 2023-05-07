@@ -10,7 +10,10 @@ work*
 *.Rhistory
 
 ## ignore test results
-./test/results/*
+test/results*
 
 ## ignore test data
-./test/data/*
+test/data*
+
+## ignore 
+nf_modules/annovar*

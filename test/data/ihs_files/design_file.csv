@@ -1,2 +1,3 @@
-chromosome,path_vcf,path_genetic_map
-21,test/data/ihs_files/ceu_chr21.recode.vcf,test/data/ihs_files/chr21.map
+chromosome,path_vcf,path_genetic_map,path_ancestral,path_manifest
+21,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/test/data/ihs_files/21.phased.with.ref.vcf,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/test/data/ihs_files/chr21.b38.predicted.map,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/nf_modules/ancestral_fasta/ANCESTOR_for_chromosome_GRCh38_21_1_46709983_1.fa,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/nf_modules/manifest_annotation/manifest21
+22,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/test/data/ihs_files/22.phased.with.ref.vcf,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/test/data/ihs_files/chr22.b38.predicted.map,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/nf_modules/ancestral_fasta/ANCESTOR_for_chromosome_GRCh38_22_1_50818468_1.fa,/mnt/c/Users/fernanda_miron1/Documents/pop_north_developing/nf-selection/nf_modules/manifest_annotation/manifest22
