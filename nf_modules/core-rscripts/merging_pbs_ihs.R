@@ -84,7 +84,7 @@ circos.initializeWithIdeogram(species = "hg38", chromosome.index = paste0("chr",
 
 ## 
 circos.genomicTrack(final_pbs, panel.fun = function(region, value, ...) {
-  circos.genomicPoints(region, value, pch = 16, cex = 0.5, col = "#B5B682", ...)
+  circos.genomicPoints(region, value, pch = 16, cex = 0.5, col = "#91C4F2", ...)
 })
 
 

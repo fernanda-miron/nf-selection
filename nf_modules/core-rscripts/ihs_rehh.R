@@ -19,7 +19,7 @@ file_ihs <- args[1]
 export_ihs <- args[2]
 
 ## First step
-haplohh <- data2haplohh(hap_file = file_ihs,
+haplohh <- data2haplohh(hap_file = file_ihs,remove_multiple_markers = T,
                         vcf_reader = "vcfR")
 
 ## Second step
