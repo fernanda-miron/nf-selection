@@ -3,9 +3,9 @@
 /*================================================================
 The Aguilar Lab presents...
 
-The iHS calculation pipeline
+The selection pipeline
 
-- A tool for the automated computing of iHS
+- A tool for the automated computing of iHS and PBS
 
 ==================================================================
 Version: 0.1
@@ -14,8 +14,8 @@ Project repository:
 Authors:
 
 - Bioinformatics Design
- Israel Aguilar-Ordonez (iaguilaror@gmail.com)
  María Fernanda Mirón Toruño (fernandamiront@gmail.com)
+Israel Aguilar-Ordonez (iaguilaror@gmail.com)
 
 - Bioinformatics Development
  María Fernanda Mirón Toruño (fernandamiront@gmail.com)
@@ -44,7 +44,7 @@ Analysis:
 def helpMessage() {
 	log.info"""
   ==========================================
-  The iHS calculation pipeline
+  The nf-selection pipeline
   v${version}
   ==========================================
 
@@ -82,7 +82,7 @@ version = "0.1"
   Define pipeline Name
   This will be used as a name to include in the results and intermediates directory names
 */
-pipeline_name = "nf_ihs_computing"
+pipeline_name = "nf_selection"
 
 /*
   Initiate default values for parameters
@@ -229,7 +229,7 @@ if (params.notphased) {
 	Channel
 	    .fromPath(params.input_ihs)
 	    .splitCsv(header:true)
-			.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_genetic_map), file(row.path_reference_vcf), file(row.path_index_reference)] }
+			.map{ row -> [ row.chromosome, file(row.path_vcf), file(row.path_genetic_map), file(row.path_reference_vcf), file(row.path_index_reference), file(row.path_ancestral), file(row.path_manifest)] }
 	    .set{ samples_ihs}
 }
 

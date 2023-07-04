@@ -12,7 +12,7 @@ publishDir "${results_dir}/phasing_with_ref", mode:"copy"
 	tuple val(chromosome), path(path_vcf), path(path_genetic_map), path(path_reference_vcf), path(path_index_reference), path(path_ancestral), path(manifest)
 
 	output:
-	tuple val(chromosome), path("${chromosome}.phased.with.ref.vcf")
+	tuple val(chromosome), path("${chromosome}.phased.with.ref.vcf"), path(path_genetic_map), path(path_ancestral), path(manifest)
 
 	"""
 	tabix -p vcf ${path_vcf}
