@@ -56,11 +56,14 @@ should be able to use them in any path).
 
 #### Databases:
 On the following path "nf_modules\annovar", the user must download different databases as follows:
-    annotate_variation.pl -buildver hg19 -downdb -webfrom annovar refGene humandb/
-    annotate_variation.pl -buildver hg19 -downdb cytoBand humandb/
-    annotate_variation.pl -buildver hg19 -downdb -webfrom annovar exac03 humandb/ 
-    annotate_variation.pl -buildver hg19 -downdb -webfrom annovar avsnp147 humandb/
-    annotate_variation.pl -buildver hg19 -downdb -webfrom annovar dbnsfp30a humandb/
+
+```
+annotate_variation.pl -buildver hg19 -downdb -webfrom annovar refGene humandb/
+annotate_variation.pl -buildver hg19 -downdb cytoBand humandb/
+annotate_variation.pl -buildver hg19 -downdb -webfrom annovar exac03 humandb/ 
+annotate_variation.pl -buildver hg19 -downdb -webfrom annovar avsnp147 humandb/
+annotate_variation.pl -buildver hg19 -downdb -webfrom annovar dbnsfp30a humandb/
+```
 
 \* Users must ensure the downloads are made on the correct genome reference. For more information check: https://annovar.openbioinformatics.org/en/latest/user-guide/startup/ (table_annovar.pl section)
 
