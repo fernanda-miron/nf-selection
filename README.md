@@ -17,16 +17,13 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 By default, the pipeline currently performs the following:
 
-1. VCF Phasing (`SHAPEIT2`)
-2. Ancestral annotation (`annotate.py`)
-3. Map file generation (`make_map.py`)
-4. iHS calculation (`hapbin`)
-5. iHS plotting (`ihs_treatment.R`)
-6. iHS annotation (`bedtools`)
-7. Fst calculation (`vcftools`)
-8. PBS calculation (`pbs_calculator.R`)
-9. PBS annotation (`bedtools`)
-10. PBS and iHS comparison (`circus.R`)
+1. VCF Phasing (`SHAPEIT4`)
+2. Ancestral annotation (`Jvarkit`)
+3. iHS calculation (`rehh`)
+4. iHS plotting (`ihs_rehh.R`)
+5. Fst calculation (`vcftools`)
+6. PBS calculation (`pbs_calculator.R`)
+7. PBS and iHS cross-reference (`merging_pbs_ihs.R`)
 
 ### **Requirements**
 
@@ -49,15 +46,13 @@ By default, the pipeline currently performs the following:
 |        [Nextflow](https://www.nextflow.io/)        |          21.10.5           |        nextflow        |
 |          [R](https://www.r-project.org/)           |           4.1.2            |   PBS calculation, plotting, data wrangling   |
 | [VCFtools](http://vcftools.sourceforge.net/)       |           0.1.15           | Fst calculation   |
-|          [SHAPEIT2](https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.html)           |           2.17            | Haplotype phasing|
-| [annotate.py](https://github.com/MerrimanLab/selectionTools/tree/master/selection_pipeline)       |           1.1           | Ancestral genome annotation   |
-|        [make_map.py](https://github.com/evotools/hapbin/blob/master/tools/make_map.py)        |          NA           | Building genetic map        |
-|          [hapbin](https://github.com/evotools/hapbin)           |           NA            | iHS computing  |
+| [bcftools](https://samtools.github.io/bcftools/bcftools.html)       |           1.10.2           | VCF ancestral annotation   |
+| [samtools](http://www.htslib.org/)       |           1.12           | VCF ancestral annotation   |
+|          [SHAPEIT4](https://odelaneau.github.io/shapeit4/)           |           4.2            | Haplotype phasing|
 
 
-
-\* **SHAPEIT2, ihsbin from hapbin and make_map.py** must be accessible from your `$PATH` (*i.e.* you
-should be able to invoke them from your command line).
+\* **Nextflow, R, VCFTools, and SHAPEIT4** must be accessible from your `$PATH` (*i.e.* you
+should be able to use them in any path).
 
 
 #### R packages needed:
@@ -65,14 +60,15 @@ should be able to invoke them from your command line).
 |                    Requirement                     |          Use in workflow   |  
 |:--------------------------------------------------:|:--------------------------:|
 |        [stringr](https://cran.r-project.org/web/packages/stringr/index.html)        | Regular expression manipulation |
-|          [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html)          |   PBS calculation; data frame manipulation |
 |          [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html)          |   PBS calculation; plots development |
-|          [ggrepel](https://cran.r-project.org/web/packages/ggrepel/index.html)          |   PBS calculation; plots development |
 |          [tidyr](https://cran.r-project.org/web/packages/tidyr/index.html)          |   preprocessing and PBS calculation; data frame manipulation |
 |          [cowplot](https://cran.r-project.org/web/packages/cowplot/index.html)          |   PBS calculation; plots development |
-|          [vroom](https://cran.r-project.org/web/packages/vroom/index.html)          |   PBS calculation; import of data frames |
-|          [biocircos](https://cran.r-project.org/web/packages/BioCircos/index.html)          |   Final plotting |
-
+|        [rehh](https://cran.r-project.org/web/packages/rehh/index.html)        | iHS computation |
+|        [vcfR](https://cran.r-project.org/web/packages/vcfR/vignettes/intro_to_vcfR.html)        | vcf manipulation |
+|        [qqman](https://cran.r-project.org/web/packages/qqman/vignettes/qqman.html)        | Results visualization |
+|        [scales](https://scales.r-lib.org/)        | Results visualization |
+|        [vroom](https://www.tidyverse.org/blog/2019/05/vroom-1-0-0/)        | Dataframe reading |
+|        [circlize](https://scales.r-lib.org/)        | Results visualization |
 
 ### **Installation**
 
@@ -196,11 +192,7 @@ Other arguments that the user may provide:
 
     --notphased [This argument may be used if the input VCF file is not phased]
     --genetic_map [This argument may be used if the user want to set its own genetic map]
-    --mart  [This argument may be used if the user wants to annotate the PBS results with a mart file]
-    --imart [This argument may be used if the user wants to annotate the iHS results with a mart file]
     --imerged AND --pmerged [This arguments may be used TOGETHER to set the cutoff for iHS and PBS in the process of merging results]
-    --cutoff [This argument may be used to draw a cutoff line in the iHS plots]
-    --maff [This argument may be used to set the maff value in the iHS computing]
     
 -------------------------------------------------------------------------------
 ### **Running the pipeline**
