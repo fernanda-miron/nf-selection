@@ -197,6 +197,7 @@ log.info "\n\n--Pipeline Parameters--"
 def pipelinesummary = [:]
 /* log parameter values beign used into summary */
 pipelinesummary['iHS: not phased']			= params.notphased
+pipelinesummary['iHS: not ancestral annotation'] = params.notancestral
 pipelinesummary['iHS: cutoff']			= params.cutoff
 pipelinesummary['PBS: cutoff']			= params.pcutoff
 pipelinesummary['iHS: maff']			= params.maff
@@ -240,6 +241,15 @@ Channel
 		.splitCsv(header:true)
 			.map{ row -> [row.chromosome, file(row.path_vcf), file(row.path_genetic_map), file(row.path_ancestral), file(row.path_manifest)] }
 		.set{ samples_phased}
+
+/* Load file in case ancestral annotation is already there */
+if (!params.notancestral) {
+	Channel
+		.fromPath(params.input_ihs)
+		.splitCsv(header:true)
+			.map{ row -> [ row.chromosome, file(row.path_vcf)] }
+	    .set{ samples_annotated}
+}
 
 /* Load files from iHS design file for genetic map generation */
 	Channel
@@ -307,10 +317,18 @@ r_script_merge = Channel.fromPath("nf_modules/core-rscripts/merging_pbs_ihs.R")
 		 p1 = samples_phased
 	 }
 	 java_script = file(params.java_script)
-	 p2 = ancestral_annotation(java_script, p1)
+	 if (params.notancestral) {
+		p2 = ancestral_annotation(java_script, p1)
+	 } else {
+		p2 = samples_annotated
+	 } 
 	 java_annotation_script = file(params.java_annotation_script)
 	 annotation_script = file(params.annotation_script)
-	 p3 = ancestral_vcf(java_annotation_script,annotation_script,p2)
+	 if (params.notancestral) {
+		p3 = ancestral_vcf(java_annotation_script,annotation_script,p2)
+	 } else {
+		p3 = samples_annotated
+	 }
 	 r_script_ihs = file(params.r_script_ihs)
 	 p4 = ihs_rehh(r_script_ihs, p3)
 	 p5 = p4.collect()
