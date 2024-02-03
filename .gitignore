@@ -11,9 +11,3 @@ work*
 
 ## ignore test results
 test/results*
-
-## ignore test data
-test/data*
-
-## ignore
-nf_modules/ancestral_fasta/*

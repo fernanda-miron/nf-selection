@@ -1,1 +1,1 @@
-1|chr1	ANCESTOR_for_chromosome:GRCh38:1:1:248956422:1	/data/reynoldsa_shared/projects/selection_signatures/data/ancestral_annotation/new/ANCESTOR_for_chromosome:GRCh38:1:1:248956422:1.fa
+1|chr1	ANCESTOR_for_chromosome_GRCh38_1_1_248956422_1	nf_modules\ancestral_fasta\ANCESTOR_for_chromosome_GRCh38_1_1_248956422_1.fa

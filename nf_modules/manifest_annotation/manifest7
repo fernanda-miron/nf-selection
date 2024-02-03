@@ -1,1 +1,1 @@
-7|chr7	ANCESTOR_for_chromosome:GRCh38:7:1:159345973:1	/data/reynoldsa_shared/projects/selection_signatures/data/ancestral_annotation/new/ANCESTOR_for_chromosome:GRCh38:7:1:159345973:1.fa
+7|chr7	ANCESTOR_for_chromosome_GRCh38_7_1_159345973_1	nf_modules\ancestral_fasta\ANCESTOR_for_chromosome_GRCh38_7_1_159345973_1.fa

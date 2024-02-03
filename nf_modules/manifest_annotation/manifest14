@@ -1,1 +1,1 @@
-14|chr14	ANCESTOR_for_chromosome:GRCh38:14:1:107043718:1	/data/reynoldsa_shared/projects/selection_signatures/data/ancestral_annotation/new/ANCESTOR_for_chromosome:GRCh38:14:1:107043718:1.fa
+14|chr14	ANCESTOR_for_chromosome_GRCh38_14_1_107043718_1	nf_modules\ancestral_fasta\ANCESTOR_for_chromosome_GRCh38_14_1_107043718_1.fa

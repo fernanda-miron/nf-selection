@@ -1,1 +1,1 @@
-5|chr5	ANCESTOR_for_chromosome:GRCh38:5:1:181538259:1	/data/reynoldsa_shared/projects/selection_signatures/data/ancestral_annotation/new/ANCESTOR_for_chromosome:GRCh38:5:1:181538259:1.fa
+5|chr5	ANCESTOR_for_chromosome_GRCh38_5_1_181538259_1	nf_modules\ancestral_fasta\ANCESTOR_for_chromosome_GRCh38_5_1_181538259_1.fa
