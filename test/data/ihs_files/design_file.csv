@@ -1,2 +1,2 @@
 chromosome,path_vcf,path_genetic_map,path_ancestral,path_manifest
-2,test/data/ihs_files/ceu_filtered.recode.vcf,test/data/ihs_files/chr2.b38.predicted.map,nf_modules/ancestral_fasta/ANCESTOR_for_chromosome_GRCh38_2_1_242193529_1.fa,nf_modules/manifest_annotation/manifest2
+2,test/data/ihs_files/chr2_1pops_lct.vcf,nf_modules/genetic_maps/chr2.b38.predicted.map,nf_modules/ancestral_fasta/ANCESTOR_for_chromosome_GRCh38_2_1_242193529_1.fa,nf_modules/manifest_annotation/manifest2

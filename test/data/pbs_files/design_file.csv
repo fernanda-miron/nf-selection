@@ -1,3 +1,2 @@
 path_vcf,path_pop1,path_pop2,path_popout
-test/data/pbs_files/filtered_vcf.recode.vcf,test/data/pbs_files/ceu_individuals.txt,test/data/pbs_files/chb_individuals.txt,test/data/pbs_files/yri_individuals.txt
-
+test/data/pbs_files/chr2_3pops_lct.vcf,test/data/pbs_files/ceu_individuals.txt,test/data/pbs_files/chb_individuals.txt,test/data/pbs_files/yri_individuals.txt

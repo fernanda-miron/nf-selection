@@ -4,10 +4,11 @@ output_directory="test/results"
 
 echo -e "======\n Testing NF execution \n======" \
 && rm -rf $output_directory \
-&& nextflow run main.nf \
+&& bash /home/fernanda-miron/nextflow run main.nf \
 	--input_ihs $input_ihs \
 	--input_pbs $input_pbs \
 	--output_dir $output_directory \
+	--notancestral \
 	-resume \
 	-with-report $output_directory/`date +%Y%m%d_%H%M%S`_report.html \
 	-with-dag $output_directory/`date +%Y%m%d_%H%M%S`.DAG.html \
