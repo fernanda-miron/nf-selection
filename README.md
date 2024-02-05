@@ -94,9 +94,13 @@ Download nf_selection from Github repository:
 ### **Test**
 Before testing, user must unzip the following files: 
 
-gzip -d /test/data/ihs_files/chr2_1pops_lct.vcf.gz
-gzip -d /test/data/pbs_files/chr2_3pops_lct.vcf.gz
-gzip -d nf_modules/ancestral/ANCESTOR_for_chromosome_GRCh38_2_1_242193529_1.fa.gz
+    gzip -d /test/data/ihs_files/chr2_1pops_lct.vcf.gz
+
+    gzip -d /test/data/pbs_files/chr2_3pops_lct.vcf.gz
+    
+    gzip -d nf_modules/ancestral/ANCESTOR_for_chromosome_GRCh38_2_1_242193529_1.fa.gz
+
+
 
 To test nf_selection execution using test data, run:
 
