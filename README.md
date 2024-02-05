@@ -5,6 +5,7 @@
 [![Ubuntu](https://img.shields.io/badge/ubuntu-%E2%89%A518.04-orange.svg)](https://ubuntu.com/download)
 [![R](https://img.shields.io/badge/R-%E2%89%A54.1.2-blue.svg)](https://ubuntu.com/download)
 
+## For a more detail explanation of the pipeline, check nf-selection-tutorial
 
 ### **Introduction**
 
@@ -97,7 +98,7 @@ Before testing, user must unzip the following files:
     gzip -d /test/data/ihs_files/chr2_1pops_lct.vcf.gz
 
     gzip -d /test/data/pbs_files/chr2_3pops_lct.vcf.gz
-    
+
     gzip -d nf_modules/ancestral/ANCESTOR_for_chromosome_GRCh38_2_1_242193529_1.fa.gz
 
 
@@ -208,6 +209,7 @@ Other arguments that the user may provide:
     --imerged AND --pmerged [This arguments may be used TOGETHER to set the cutoff for iHS and PBS in the process of merging results]
     
 -------------------------------------------------------------------------------
+
 ### **Running the pipeline**
 The typical command for running the pipeline is as follows:
 
